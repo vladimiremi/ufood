@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from 'src/app.module';
 
 const userDefault = {
-  id: '03e53500-60d4-4ebb-9b28-6b3a9ea32a40',
+  userName: 'vladimir',
 };
 
 describe('AppController (e2e)', () => {
@@ -24,7 +24,7 @@ describe('AppController (e2e)', () => {
   it('/products (GET) user can list your products', async () => {
     const product = await request(app.getHttpServer())
       .get('/products')
-      .query({ userId: userDefault.id })
+      .query({ userName: userDefault.userName })
       .expect(200);
     expect(product.body[0]).toHaveProperty('id');
     expect(product.body[0]).toHaveProperty('name');

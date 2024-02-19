@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class ItemDto {
   name: string;
@@ -19,6 +19,6 @@ export class ProductDto {
 
 export class QueryProductsDto {
   @IsNotEmpty()
-  @IsUUID('4')
-  userId: string;
+  @IsString()
+  userName: string;
 }

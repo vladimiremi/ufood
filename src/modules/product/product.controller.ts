@@ -8,7 +8,7 @@ export class ProductController {
 
   @Get()
   getProducts(@Query() query: QueryProductsDto) {
-    return this.productService.getProducts(query.userId);
+    return this.productService.getProducts(query.userName);
   }
 
   @Get('/:productId/items')

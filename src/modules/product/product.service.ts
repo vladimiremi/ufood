@@ -11,10 +11,10 @@ export class ItemParam {
 @Injectable()
 export class ProductService {
   constructor(private prisma: PrismaService) {}
-  async getProducts(userId: string) {
+  async getProducts(userName: string) {
     return await this.prisma.product.findMany({
       where: {
-        userId: userId || '',
+        userName: userName || '',
       },
     });
   }
