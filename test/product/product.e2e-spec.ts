@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from 'src/app.module';
+
+const userDefault = {
+  id: '03e53500-60d4-4ebb-9b28-6b3a9ea32a40',
+};
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -12,20 +16,15 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        transform: true,
-        whitelist: true,
-        forbidNonWhitelisted: false,
-      }),
-    );
+
     await app.init();
   });
 
   let productId: string;
-  it('/products (GET)', async () => {
+  it('/products (GET) user can list your products', async () => {
     const product = await request(app.getHttpServer())
       .get('/products')
+      .query({ userId: userDefault.id })
       .expect(200);
     expect(product.body[0]).toHaveProperty('id');
     expect(product.body[0]).toHaveProperty('name');
@@ -33,18 +32,7 @@ describe('AppController (e2e)', () => {
     productId = product.body[0].id;
   });
 
-  it('/products/:productId/items (GET)', async () => {
-    const product = await request(app.getHttpServer())
-      .get(`/products/${productId}/items`)
-      .expect(200);
-
-    expect(product.body[0]).toHaveProperty('id');
-    expect(product.body[0]).toHaveProperty('productId');
-    expect(product.body[0]).toHaveProperty('name');
-    expect(typeof product.body[0].price).toEqual('number');
-    expect(product.body[0]).toHaveProperty('description');
-  });
-
+  let itemId: string;
   it('/products/:productId/items (POST) - User can create a new item', async () => {
     const data = {
       name: 'Item 1',
@@ -53,14 +41,44 @@ describe('AppController (e2e)', () => {
     };
     const product = await request(app.getHttpServer())
       .post(`/products/${productId}/items`)
-      .send(data);
-    // .expect(201);
-    console.log(product.body);
+      .send(data)
+      .expect(201);
+
     expect(product.body).toHaveProperty('id');
     expect(product.body).toHaveProperty('productId');
     expect(product.body).toHaveProperty('name');
     expect(typeof product.body.price).toEqual('number');
     expect(product.body).toHaveProperty('description');
+    itemId = product.body.id;
+  });
+
+  it('/products/:productId/items (GET)', async () => {
+    const items = await request(app.getHttpServer())
+      .get(`/products/${productId}/items`)
+      .expect(200);
+
+    expect(items.body[0]).toHaveProperty('id');
+    expect(items.body[0]).toHaveProperty('productId');
+    expect(items.body[0]).toHaveProperty('name');
+    expect(typeof items.body[0].price).toEqual('number');
+    expect(items.body[0]).toHaveProperty('description');
+  });
+
+  it('/products/:productId/items (PUT) - User can edit a item', async () => {
+    const data = {
+      name: 'Item edited',
+      price: 5,
+      description: 'Item 1 description edited',
+    };
+    const product = await request(app.getHttpServer())
+      .put(`/products/items/${itemId}`)
+      .send(data)
+      .expect(200);
+
+    expect(product.body.name).toEqual(data.name);
+    expect(typeof product.body.price).toEqual('number');
+    expect(product.body.price).toEqual(data.price);
+    expect(product.body.description).toEqual(data.description);
   });
 
   afterAll(async () => {
